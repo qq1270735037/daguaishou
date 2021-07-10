@@ -4,7 +4,7 @@ const stream = require('stream');
 const zlib = require('zlib');
 const vm = require('vm');
 const PNG = require('png-js');
-const UA = require('./jd_USER_AGENTS.js').USER_AGENT;
+const UA = require('./qq1270735037_daguaishou_jd_USER_AGENTS.js').USER_AGENT;
 
 
 Math.avg = function average() {
