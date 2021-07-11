@@ -6,7 +6,7 @@ npm i png-js 或者 npm i png-js -S
 
 */
 
-const validator = require('./shufflewzc_faker2_jd_JDJRValidator_Pure.js');
+const validator = require('./qq1270735037_daguaishou_jd_JDJRValidator_Pure.js');
 const Faker=require('./shufflewzc_faker2_jd_sign_graphics_validate.js') 
 
 const $ = new Env('京东签到图形验证');
