@@ -9,7 +9,7 @@ export lsjdh="jdAward2" ##兑换10豆
 export lsjdh="jdAward3" ##兑换100豆
 export lsjdh="jdAward4" ##兑换牛奶
 [task_local]
-0 11 * * *
+0 11 * * * jd_lsj.js
 */
 const $ = new Env('柠檬京东零食街');
 const notify = $.isNode() ? require('./sendNotify') : '';
@@ -113,13 +113,15 @@ await doliulan(3)
 //await gettask()  
 
 $.log("开始浏览会场")
+await doshop(1000014803)
+await $.wait(3000)
 await doshop(10299171)
 await $.wait(3000)
 await doshop(1000077335)
 await $.wait(3000)
 await doshop(1000008814)
 await $.wait(3000)
-await doshop(1000014803)
+await doshop(1000101562)
 $.log("开始浏览推荐食品商品")
 await doGoods(1)
 await $.wait(3000)
@@ -457,7 +459,7 @@ function playgame() {
     let options = {
       url: `https://jinggengjcq-isv.isvjcloud.com/dm/front/foodRunning/SendCoin?open_id=&mix_nick=&bizExtString=&user_id=10299171`,
 
-      body: `{"jsonRpc":"2.0","params":{"commonParameter":{"appkey":"51B59BB805903DA4CE513D29EC448375","m":"POST","sign":"3a4b12fe8d85b42c2f5defb8d642f043","timestamp":1625035211650,"userId":10299171},"admJson":{"coin":10000,"point":10000,"method":"/foodRunning/SendCoin","actId":"jd_food_running","buyerNick":"${nick}","pushWay":1,"userId":10299171}}}`,
+      body: `{"jsonRpc":"2.0","params":{"commonParameter":{"appkey":"51B59BB805903DA4CE513D29EC448375","m":"POST","sign":"3a4b12fe8d85b42c2f5defb8d642f043","timestamp":1625035211650,"userId":10299171},"admJson":{"coin":5000,"point":5000,"method":"/foodRunning/SendCoin","actId":"jd_food_running","buyerNick":"${nick}","pushWay":1,"userId":10299171}}}`,
       headers: {
         "Origin": "https://jinggengjcq-isv.isvjcloud.com",
         "Content-Type": "application/json; charset=UTF-8",
