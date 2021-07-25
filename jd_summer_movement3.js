@@ -151,7 +151,7 @@ getUA()
       $.inviteId = $.oneInviteInfo.inviteId;
       console.log(`${$.UserName}去助力${$.oneInviteInfo.ues},助力码${$.inviteId}`);
       await takePostRequest('help');
-      await $.wait(2000);
+      await $.wait(1000);
     }
   }
   
