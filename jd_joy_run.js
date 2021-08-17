@@ -38,9 +38,9 @@ http-response ^https:\/\/draw\.jdfcloud\.com(\/mirror)?\/\/api\/user\/addUser\?c
 http-request ^https:\/\/draw\.jdfcloud\.com(\/mirror)?\/\/api\/user\/user\/detail\?openId= script-path=jd_joy_run.js, timeout=3600, tag=宠汪汪助力获取Token
 */
 const $ = new Env('宠汪汪赛跑');
-const zooFaker = require('./JDJRValidator_Pure');
-$.get = zooFaker.injectToRequest($.get.bind($));
-$.post = zooFaker.injectToRequest($.post.bind($));
+const zooFaker = require('./utils/JDJRValidator_Pure');
+$.get = zooFaker.injectToRequest2($.get.bind($));
+$.post = zooFaker.injectToRequest2($.post.bind($));
 //宠汪汪赛跑所需token，默认读取作者服务器的
 //需自行抓包，宠汪汪小程序获取token，点击`发现`或`我的`，寻找`^https:\/\/draw\.jdfcloud\.com(\/mirror)?\/\/api\/user\/user\/detail\?openId=`获取token
 let jdJoyRunToken = '';
@@ -50,11 +50,11 @@ const JD_BASE_API = `https://draw.jdfcloud.com//pet`;
 //Node.js用户请在jdCookie.js处填写京东ck;
 const jdCookieNode = $.isNode() ? require('./jdCookie.js') : {};
 //下面给出好友邀请助力的示例填写规则
-let invite_pins = ['希特森侍卫','一碗-白米饭','野生大基巴','优秀的小黄鸭','志刚刚刚刚1'];
+let invite_pins = ['zhaosen2580,jd_47ee22449e303,jd_6c5e39478ec3b,jd_4346918b58d6e,liuz9988,88489948,jd_61f1269fd3236'];
 //下面给出好友赛跑助力的示例填写规则
-let run_pins = ['希特森侍卫','一碗-白米饭','野生大基巴','优秀的小黄鸭','志刚刚刚刚1'];
+let run_pins = ['zhaosen2580,jd_47ee22449e303,jd_6c5e39478ec3b,jd_4346918b58d6e,liuz9988,88489948,jd_61f1269fd3236'];
 //friendsArr内置太多会导致IOS端部分软件重启,可PR过来(此处目的:帮别人助力可得30g狗粮)
-let friendsArr = ['希特森侍卫','一碗-白米饭','野生大基巴','优秀的小黄鸭','志刚刚刚刚1']
+let friendsArr = ["zhaosen2580", "jd_47ee22449e303", "jd_6c5e39478ec3b", "jd_4346918b58d6e", "liuz9988", "88489948", "jd_61f1269fd3236"]
 
 
 //IOS等用户直接用NobyDa的jd cookie
