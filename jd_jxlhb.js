@@ -81,7 +81,7 @@ const BASE_URL = 'https://wq.jd.com/cubeactive/steprewardv3'
         if (!item) continue;
         if (!$.canHelp) break
         console.log(`【${$.UserName}】去助力作者的邀请码：${item}`);
-        await enrollFriend(item);
+        
         await $.wait(2500);
       }
     }
