@@ -121,7 +121,7 @@ async function doTask(){
         if(logs)$.log(data)
         if(result.code == 0){
            console.log("\n"+result.data.bizMsg+"\n")
-   await $.wait(8000)
+   await $.wait(5000)
         }else{
            $.log(result.msg+"\n")
         }
@@ -143,7 +143,7 @@ async function DoTask(){
         if(logs)$.log(data)
         if(result.data.bizCode == 0){
            console.log(result.data.result.successToast+"\n")
-   await $.wait(4000) 
+   await $.wait(2000) 
         }else{
            console.log(result.data.bizMsg+"\n")
         }
@@ -166,7 +166,7 @@ async function unlock(){
         if(logs)$.log(data)
         if(result.data.bizCode == 0){
            console.log("\n获得"+result.data.result.levelUpAward.pieceRedpacket.value+result.data.result.levelUpAward.pieceRedpacket.name+"\n")
-   await $.wait(4000)
+   await $.wait(2000)
         }else{
            $.log("解锁失败，好玩币不足"+result.data.bizMsg+"\n")
         }
@@ -240,7 +240,7 @@ async function control(){
      for(let i = 0; i < list1tokenArr.distinct().length; i++){
    helpcode = list1tokenArr[i]
    await dosupport()
-   await $.wait(4000)
+   await $.wait(2000)
 }
 }
 async function dosupport(){
@@ -253,7 +253,7 @@ async function dosupport(){
         if(logs)$.log(data)
         if(result.data.bizCode == 0){
            console.log(result.data.bizMsg+"获得"+result.data.result.score+"好玩豆\n")
-   await $.wait(4000)
+   await $.wait(2000)
         }else{
            console.log(result.data.bizMsg+"\n")
         }
