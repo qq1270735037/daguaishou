@@ -89,7 +89,7 @@ const JD_API_HOST = 'https://api.m.jd.com/api';
         }
       }
     }
-    if ($.canHelp && ($.authorMyShareIds && $.authorMyShareIds.length)) {
+    if (0) {
       console.log(`\n\n有剩余助力机会则给作者进行助力`);
       for (let j = 0; j < $.authorMyShareIds.length && $.canHelp; j++) {
         console.log(`\n账号 ${$.index} ${$.UserName} 开始给作者 ${$.authorMyShareIds[j]} 进行助力`)
