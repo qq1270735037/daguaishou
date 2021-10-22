@@ -107,7 +107,7 @@ const BASE_URL = 'https://m.jingxi.com/cubeactive/steprewardv3'
         }
       }
     }
-  }
+
   //拆红包
   for (let i = 0; i < cookiesArr.length; i++) {
     cookie = cookiesArr[i];
