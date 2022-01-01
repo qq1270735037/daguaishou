@@ -1,21 +1,15 @@
 /*
-
 脚本默认会帮我助力开工位，介意请添加变量HELP_JOYPARK，false为不助力
 export HELP_JOYPARK=""
-
-更新地址：https://github.com/Tsukasa007/my_script
 ============Quantumultx===============
 [task_local]
 #汪汪乐园每日任务
 0 0,7,9,17,20 * * * jd_joypark_task.js, tag=汪汪乐园每日任务, img-url=https://raw.githubusercontent.com/tsukasa007/icon/master/jd_joypark_task.png, enabled=true
-
 ================Loon==============
 [Script]
 cron "0 0,7,9,17,20 * * *" script-path=jd_joypark_task.js,tag=汪汪乐园每日任务
-
 ===============Surge=================
 汪汪乐园每日任务 = type=cron,cronexp="0 0,7,9,17,20 * * *",wake-system=1,timeout=3600,script-path=jd_joypark_task.js
-
 ============小火箭=========
 汪汪乐园每日任务 = type=cron,script-path=jd_joypark_task.js, cronexpr="0 0,7,9,17,20 * * *", timeout=3600, enable=true
 */
@@ -35,12 +29,9 @@ if ($.isNode()) {
 }
 $.invitePinTaskList = []
 $.invitePin = [
-  "NZ42T3lD49qiTGpZsSucXRS8kD-wJ4K6FxwxUpNbb4I",
-  "zZkewfd3OKs-WtoJd8Jw6OIrD81WzO3SX56S2DGMlZ0",
-  "7zG4VHS99AUEoX1mQTkC9Q",
-  "BbsjCRrQudIL06kRvqmVln053h03GiApg7HN_Vhy_Og",
-  "sAxL-dc5T6lS6wtKqP6SlA",
-  "bcVxt4PbZdbX7tiT1Q_ubg"
+  "VxQJC6Sr0QZkcOHwxoTjrw",
+  "oRY9YryofcNg71MZeKSZseKD6P6BJzKv2NBGxfiuJ20",
+  "EDPUVDhR7nUPh3jUGDJ_GyiLt77-wROqWVP2aesRUt8"
 ]
 const JD_API_HOST = `https://api.m.jd.com/client.action`;
 message = ""
@@ -60,24 +51,6 @@ message = ""
       $.nickName = '';
       $.openIndex = 0
       console.log(`\n******开始【京东账号${$.index}】${$.nickName || $.UserName}*********\n`);
-      // if ($.isNode()) {
-      //   if (process.env.HELP_JOYPARK && process.env.HELP_JOYPARK == "false") {
-      //   } else {
-      //     $.kgw_invitePin = ["7zG4VHS99AUEoX1mQTkC9Q"][Math.floor((Math.random() * 1))];
-      //     let resp = await getJoyBaseInfo(undefined, 2, $.kgw_invitePin);
-      //     if (resp.data && resp.data.helpState && resp.data.helpState === 1) {
-      //       $.log("帮【zero205】开工位成功，感谢！\n");
-      //     } else if (resp.data && resp.data.helpState && resp.data.helpState === 3) {
-      //       $.log("你不是新用户！跳过开工位助力\n");
-      //       break
-      //     } else if (resp.data && resp.data.helpState && resp.data.helpState === 2) {
-      //       $.log(`他的工位已全部开完啦！\n`);
-      //       $.openIndex++
-      //     } else {
-      //       $.log("开工位失败！\n");
-      //     }
-      //   }
-      // }
       await getJoyBaseInfo()
       if ($.joyBaseInfo && $.joyBaseInfo.invitePin) {
         $.log(`${$.name} - ${$.UserName}  助力码: ${$.joyBaseInfo.invitePin}`);
@@ -104,18 +77,23 @@ message = ""
       for (const task of $.taskList) {
         if (task.taskType === 'SIGN') {
           $.log(`${task.taskTitle}`)
+          await $.wait(1000)
           await apDoTask(task.id, task.taskType, undefined);
           $.log(`${task.taskTitle} 领取奖励`)
+          await $.wait(1000)
           await apTaskDrawAward(task.id, task.taskType);
         }
         if (task.taskType === 'BROWSE_PRODUCT' || task.taskType === 'BROWSE_CHANNEL' && task.taskLimitTimes !== 1) {
+          await $.wait(1000)
           let productList = await apTaskDetail(task.id, task.taskType);
           let productListNow = 0;
           if (productList.length === 0) {
+            await $.wait(1000)
             let resp = await apTaskDrawAward(task.id, task.taskType);
 
             if (!resp.success) {
               $.log(`${task.taskTitle}|${task.taskShowTitle} 领取完成!`)
+              await $.wait(1000)
               productList = await apTaskDetail(task.id, task.taskType);
 
             }
@@ -128,6 +106,7 @@ message = ""
               break;
             }
             $.log(`${task.taskTitle} ${task.taskDoTimes}/${task.taskLimitTimes}`);
+            await $.wait(1000)
             let resp = await apDoTask(task.id, task.taskType, productList[productListNow].itemId, productList[productListNow].appid);
 
             if (resp.code === 2005 || resp.code === 0) {
@@ -143,6 +122,7 @@ message = ""
           }
           //领
           for (let j = 0; j < task.taskLimitTimes; j++) {
+            await $.wait(1000)
             let resp = await apTaskDrawAward(task.id, task.taskType);
 
             if (!resp.success) {
@@ -151,8 +131,10 @@ message = ""
             }
           }
         } else if (task.taskType === 'SHARE_INVITE') {
+          $.yq_taskid = task.id
           for (let j = 0; j < 5; j++) {
-            let resp = await apTaskDrawAward(167, 'SHARE_INVITE');
+            await $.wait(1000)
+            let resp = await apTaskDrawAward($.yq_taskid, 'SHARE_INVITE');
 
             if (!resp.success) {
               break
@@ -162,15 +144,21 @@ message = ""
         }
         if (task.taskType === 'BROWSE_CHANNEL' && task.taskLimitTimes === 1) {
           $.log(`${task.taskTitle}|${task.taskShowTitle}`)
+          await $.wait(1000)
           await apDoTask2(task.id, task.taskType, task.taskSourceUrl);
           $.log(`${task.taskTitle}|${task.taskShowTitle} 领取奖励`)
+          await $.wait(1000)
           await apTaskDrawAward(task.id, task.taskType);
         }
+        // if (task.taskType === 'SHARE_INVITE') {
+        //   $.yq_taskid = task.id
+        // }
+
       }
     }
   }
 
-  $.log("\n======汪汪乐园开始内部互助======\n======有剩余助力次数则帮zero205助力======\n")
+  $.log("\n======汪汪乐园开始内部互助======\n")
   for (let i = 0; i < cookiesArr.length; i++) {
     cookie = cookiesArr[i];
     if (cookie) {
@@ -191,7 +179,7 @@ message = ""
       $.newinvitePinTaskList = [...($.invitePinTaskList || []), ...($.invitePin || [])]
       for (const invitePinTaskListKey of $.newinvitePinTaskList) {
         $.log(`【京东账号${$.index}】${$.nickName || $.UserName} 助力 ${invitePinTaskListKey}`)
-        let resp = await getJoyBaseInfo(261, 1, invitePinTaskListKey);
+        let resp = await getJoyBaseInfo($.yq_taskid, 1, invitePinTaskListKey);
         if (resp.success) {
           if (resp.data.helpState === 1) {
             $.log("助力成功！");
@@ -213,13 +201,13 @@ message = ""
     }
   }
 })()
-  .catch((e) => $.logErr(e))
-  .finally(() => $.done())
+    .catch((e) => $.logErr(e))
+    .finally(() => $.done())
 //获取活动信息
 
 //任务列表
 function getTaskList() {
-  //await $.wait(20)
+  // await $.wait(200)
   return new Promise(resolve => {
     $.post(taskPostClientActionUrl(`body=%7B%22linkId%22%3A%22LsQNxL7iWDlXUs6cFl-AAg%22%7D&appid=activities_platform`, `apTaskList`), async (err, resp, data) => {
       $.log('=== 任务列表 start ===')
