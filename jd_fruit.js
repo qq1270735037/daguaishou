@@ -28,10 +28,18 @@ export DO_TEN_WATER_AGAIN="" 默认再次浇水
 */
 const $ = new Env('东东农场');
 let cookiesArr = [], cookie = '', jdFruitShareArr = [], isBox = false, notify, newShareCodes, allMessage = '';
+let JDWXX_ZL = $.isNode() ? (process.env.JDWXX_ZL ? process.env.JDWXX_ZL : "JDWXX") : "JDWXX";//开启内置助力
+let shareCodesdq = ""
+let shareCodesArr = []
+console.log('\nQQ技术交流群 681030097\n')
 //助力好友分享码(最多3个,否则后面的助力失败),原因:京东农场每人每天只有3次助力机会
 //此此内容是IOS用户下载脚本到本地使用，填写互助码的地方，同一京东账号的好友互助码请使用@符号隔开。
 //下面给出两个账号的填写示例（iOS只支持2个京东账号）
-let shareCodes = []
+let shareCodes = [ // 这个列表填入你要助力的好友的shareCode
+                   //账号一的好友shareCode,不同好友的shareCode中间用@符号隔开
+  'c375f5806c5a406ca238dc4e5410f009@f010bfbb75fa403b8facd45d91954b6f@c466e4f13cbe467c850276d7c356c1ea@fa4753f4ceba4cce82029815d6638ea0@29b94db0d81e41dfa977026f1b27aa79@31a3b3b208a04c0bbc90e11425a53042@51a8f379bbc04876a2f78d21ba4186bf@kjaxqa3r5slp5jm36f2q6yaxxqpsqfjcsllcuwy@MTAxODc2NTEzNDAwMDAwMDAyMTUyNjE1NQ==@e428c343e3a54647972129defc96e655',
+  'c375f5806c5a406ca238dc4e5410f009@f010bfbb75fa403b8facd45d91954b6f@c466e4f13cbe467c850276d7c356c1ea@fa4753f4ceba4cce82029815d6638ea0@29b94db0d81e41dfa977026f1b27aa79@31a3b3b208a04c0bbc90e11425a53042@51a8f379bbc04876a2f78d21ba4186bf@kjaxqa3r5slp5jm36f2q6yaxxqpsqfjcsllcuwy@MTAxODc2NTEzNDAwMDAwMDAyMTUyNjE1NQ==@e428c343e3a54647972129defc96e655',
+]
 let message = '', subTitle = '', option = {}, isFruitFinished = false;
 const retainWater = 100;//保留水滴大于多少g,默认100g;
 let jdNotify = false;//是否关闭通知，false打开通知推送，true关闭通知推送
@@ -41,10 +49,26 @@ const JD_API_HOST = 'https://api.m.jd.com/client.action';
 const urlSchema = `openjd://virtual?params=%7B%20%22category%22:%20%22jump%22,%20%22des%22:%20%22m%22,%20%22url%22:%20%22https://h5.m.jd.com/babelDiy/Zeus/3KSjXqQabiTuD1cJ28QskrpWoBKT/index.html%22%20%7D`;
 !(async () => {
   await requireConfig();
+
   if (!cookiesArr[0]) {
     $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/bean/signIndex.action', {"open-url": "https://bean.m.jd.com/bean/signIndex.action"});
     return;
   }
+  if(JDWXX_ZL == "JDWXX"){
+    for (let i = 0; i < cookiesArr.length; i++) {
+      if (cookiesArr[i]) {
+        cookie = cookiesArr[i];
+        $.UserName = decodeURIComponent(cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1])
+        $.index = i + 1;
+        $.isLogin = true;
+        $.nickName = '';
+        await getJDFruit()
+      }
+    }
+    shareCodesdq = shareCodesdq.substring(0,shareCodesdq.length - 1)
+    // shareCodesArr.push("c375f5806c5a406ca238dc4e5410f009@f010bfbb75fa403b8facd45d91954b6f@c466e4f13cbe467c850276d7c356c1ea@fa4753f4ceba4cce82029815d6638ea0@29b94db0d81e41dfa977026f1b27aa79@31a3b3b208a04c0bbc90e11425a53042@51a8f379bbc04876a2f78d21ba4186bf@kjaxqa3r5slp5jm36f2q6yaxxqpsqfjcsllcuwy@MTAxODc2NTEzNDAwMDAwMDAyMTUyNjE1NQ==@e428c343e3a54647972129defc96e655")
+  }
+
   for (let i = 0; i < cookiesArr.length; i++) {
     if (cookiesArr[i]) {
       cookie = cookiesArr[i];
@@ -65,7 +89,10 @@ const urlSchema = `openjd://virtual?params=%7B%20%22category%22:%20%22jump%22,%2
       message = '';
       subTitle = '';
       option = {};
-      await shareCodesFormat();
+      if(JDWXX_ZL == "JDWXX")
+        await shareCodesFormatJDWXX();
+      else
+        await shareCodesFormat();
       await jdFruit();
     }
   }
@@ -1326,6 +1353,15 @@ function readShareCode() {
     resolve()
   })
 }
+
+function shareCodesFormatJDWXX() {
+  return new Promise(async resolve => {
+    newShareCodes = [];
+    newShareCodes = shareCodesdq.split('@');
+    console.log(`第${$.index}个京东账号将要助力的好友${JSON.stringify(newShareCodes)}`)
+    resolve();
+  })
+}
 function shareCodesFormat() {
   return new Promise(async resolve => {
     // console.log(`第${$.index}个京东账号的助力码:::${$.shareCodesArr[$.index - 1]}`)
@@ -1365,23 +1401,98 @@ function requireConfig() {
       cookiesArr = [$.getdata('CookieJD'), $.getdata('CookieJD2'), ...jsonParse($.getdata('CookiesJD') || "[]").map(item => item.cookie)].filter(item => !!item);
     }
     console.log(`共${cookiesArr.length}个京东账号\n`)
-    $.shareCodesArr = [];
-    if ($.isNode()) {
-      Object.keys(jdFruitShareCodes).forEach((item) => {
-        if (jdFruitShareCodes[item]) {
-          $.shareCodesArr.push(jdFruitShareCodes[item])
-        }
-      })
-    } else {
-      if ($.getdata('jd_fruit_inviter')) $.shareCodesArr = $.getdata('jd_fruit_inviter').split('\n').filter(item => !!item);
-      console.log(`\nBoxJs设置的${$.name}好友邀请码:${$.getdata('jd_fruit_inviter') ? $.getdata('jd_fruit_inviter') : '暂无'}\n`);
+    if(JDWXX_ZL == "JDWXX"){
+      console.log("\n已开启【JDWXX】库内置助力\n");
+    }else {
+      console.log("\n如需启用内置助力 请在环境变量里添加 JDWXX_ZL  值 JDWXX  开启内置助力\n")
+      $.shareCodesArr = [];
+      if ($.isNode()) {
+        Object.keys(jdFruitShareCodes).forEach((item) => {
+          if (jdFruitShareCodes[item]) {
+            $.shareCodesArr.push(jdFruitShareCodes[item])
+          }
+        })
+      } else {
+        if ($.getdata('jd_fruit_inviter')) $.shareCodesArr = $.getdata('jd_fruit_inviter').split('\n').filter(item => !!item);
+        console.log(`\nBoxJs设置的${$.name}好友邀请码:${$.getdata('jd_fruit_inviter') ? $.getdata('jd_fruit_inviter') : '暂无'}\n`);
+      }
+      // console.log(`$.shareCodesArr::${JSON.stringify($.shareCodesArr)}`)
+      // console.log(`jdFruitShareArr账号长度::${$.shareCodesArr.length}`)
+      console.log(`您提供了${$.shareCodesArr.length}个账号的农场助力码\n`);
     }
-    // console.log(`$.shareCodesArr::${JSON.stringify($.shareCodesArr)}`)
-    // console.log(`jdFruitShareArr账号长度::${$.shareCodesArr.length}`)
-    console.log(`您提供了${$.shareCodesArr.length}个账号的农场助力码\n`);
     resolve()
+
   })
 }
+
+async function getJDFruit() {
+  async function initForFarm() {
+    return new Promise((resolve) => {
+      const option = {
+        url: `${JD_API_HOST}?functionId=initForFarm`,
+        body: `body=${escape(
+            JSON.stringify({version: 4})
+        )}&appid=wh5&clientVersion=9.1.0`,
+        headers: {
+          accept: "*/*",
+          "accept-encoding": "gzip, deflate, br",
+          "accept-language": "zh-CN,zh;q=0.9",
+          "cache-control": "no-cache",
+          cookie: cookie,
+          origin: "https://home.m.jd.com",
+          pragma: "no-cache",
+          referer: "https://home.m.jd.com/myJd/newhome.action",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-site",
+          "User-Agent": $.isNode()
+              ? process.env.JD_USER_AGENT
+                  ? process.env.JD_USER_AGENT
+                  : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1"
+              : $.getdata("JDUA")
+                  ? $.getdata("JDUA")
+                  : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      };
+      $.post(option, (err, resp, data) => {
+        try {
+          if (err) {
+            console.log("东东农场: API查询互助码请求失败 ‼️‼️");
+            console.log(JSON.stringify(err));
+            $.logErr(err);
+          } else {
+            if (safeGet(data)) {
+              $.farmInfo = JSON.parse(data);
+              if ($.farmInfo.farmUserPro) {
+              }
+            }
+          }
+        } catch (e) {
+          $.logErr(e, resp);
+        } finally {
+          resolve();
+        }
+      });
+    });
+  }
+
+  async function jdFruit() {
+    await initForFarm();
+    if ($.farmInfo.farmUserPro) {
+      console.log(`【京东账号${$.index}（${$.UserName}）京东农场互助码】${$.farmInfo.farmUserPro.shareCode}`);
+      shareCodesdq += $.farmInfo.farmUserPro.shareCode + "@"
+    } else {
+      /*console.log(
+        `初始化农场数据异常, 请登录京东 app查看农场0元水果功能是否正常,农场初始化数据: ${JSON.stringify(
+          $.farmInfo
+        )}`
+      );*/
+    }
+  }
+  await jdFruit();
+}
+
 function TotalBean() {
   return new Promise(async resolve => {
     const options = {
