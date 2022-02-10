@@ -9,11 +9,14 @@
 [task_local]
 #签到领现金
 2 0-23/4 * * * jd_cash.js, tag=签到领现金, img-url=https://raw.githubusercontent.com/Orz-3/mini/master/Color/jd.png, enabled=true
+
 ================Loon==============
 [Script]
 cron "2 0-23/4 * * *" script-path=jd_cash.js,tag=签到领现金
+
 ===============Surge=================
 签到领现金 = type=cron,cronexp="2 0-23/4 * * *",wake-system=1,timeout=3600,script-path=jd_cash.js
+
 ============小火箭=========
 签到领现金 = type=cron,script-path=jd_cash.js, cronexpr="2 0-23/4 * * *", timeout=3600, enable=true
  */
@@ -28,8 +31,7 @@ let helpAuthor = true;
 const randomCount = $.isNode() ? 5 : 5;
 let cash_exchange = false;//是否消耗2元红包兑换200京豆，默认否
 const inviteCodes = [
-  `Zxozbu21Zw@eU9YELXUJol8qTO_shJ3@eU9YGJryLJVYhSmutTdI@eU9YN4TNPL18uTGgvi93@9r-XukAXv1id@eU9YKbT3N7pyhyuHvyZp@XuGQ_vlyb8W3UyQ@-56ytUAeb_gi-Wg@eU9Yar3nYPl3pTqEmXca0A@ZE9_P4_SIYF8uR20lyc@eU9Ya76yZ6p392jSwiVA1w@eU9YaeWyYf8koj3Vn3cV0g@eU9YDrbMJ5lutjirqBZo@Jx82beu1Zvwn7GvTy3IT0A@9beHuWQHsVaSKOB8HueEAiny@Ih43a-ywZPwk9m26iw@eU9Ya-63N_gi8m3SziYW0Q@eU9Ya-m3ZKh1omrTy3BB0A@cUpkN6jtZ_Uv8Q`,
-  `Zxozbu21Zw@eU9YELXUJol8qTO_shJ3@eU9YGJryLJVYhSmutTdI@eU9YN4TNPL18uTGgvi93@9r-XukAXv1id@eU9YKbT3N7pyhyuHvyZp@XuGQ_vlyb8W3UyQ@-56ytUAeb_gi-Wg@eU9Yar3nYPl3pTqEmXca0A@ZE9_P4_SIYF8uR20lyc@eU9Ya76yZ6p392jSwiVA1w@eU9YaeWyYf8koj3Vn3cV0g@eU9YDrbMJ5lutjirqBZo@Jx82beu1Zvwn7GvTy3IT0A@9beHuWQHsVaSKOB8HueEAiny@Ih43a-ywZPwk9m26iw@eU9Ya-63N_gi8m3SziYW0Q@eU9Ya-m3ZKh1omrTy3BB0A@cUpkN6jtZ_Uv8Q`,
+  ``
 ]
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
@@ -47,7 +49,7 @@ let allMessage = '';
     return;
   }
   await requireConfig()
-  $.authorCode = []
+  $.authorCode = await getAuthorShareCode('https://gitee.com/KingRan521/JD-Scripts/raw/master/shareCodes/jd_cash.json')
   for (let i = 0; i < cookiesArr.length; i++) {
     if (cookiesArr[i]) {
       cookie = cookiesArr[i];
@@ -86,7 +88,7 @@ async function jdCash() {
   await appindex()
   await index()
 
-  await shareCodesFormat()
+  //await shareCodesFormat()
   // await helpFriends()
   // await getReward()
   // await getReward('2');
@@ -120,12 +122,10 @@ async function jdCash() {
 
 async function appindex(info=false) {
   let functionId = "cash_homePage"
-  let body = "%7B%7D"
-  let uuid = randomString(16)
-  let sign = await getSign(functionId, decodeURIComponent(body), uuid)
-  let url = `${JD_API_HOST}?functionId=${functionId}&build=167774&client=apple&clientVersion=10.1.0&uuid=${uuid}&${sign}`
+  let body = {}
+  let sign = await getSign(functionId, body)
   return new Promise((resolve) => {
-    $.post(apptaskUrl(url, body), async (err, resp, data) => {
+    $.post(apptaskUrl(functionId, sign), async (err, resp, data) => {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
@@ -288,12 +288,10 @@ function helpFriend(helpInfo) {
 
 async function appdoTask(type,taskInfo) {
   let functionId = 'cash_doTask'
-  let body = escape(JSON.stringify({"type":type,"taskInfo":taskInfo}))
-  let uuid = randomString(16)
-  let sign = await getSign(functionId, decodeURIComponent(body), uuid)
-  let url = `${JD_API_HOST}?functionId=${functionId}&build=167774&client=apple&clientVersion=10.1.0&uuid=${uuid}&${sign}`
+  let body = {"type":type,"taskInfo":taskInfo}
+  let sign = await getSign(functionId, body)
   return new Promise((resolve) => {
-    $.post(apptaskUrl(url, body), (err, resp, data) => {
+    $.post(apptaskUrl(functionId, sign), (err, resp, data) => {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
@@ -429,20 +427,21 @@ function exchange2(node) {
     })
   })
 }
-function getSign(functionid, body, uuid) {
+function getSign(functionId, body) {
   return new Promise(async resolve => {
     let data = {
-      "functionId":functionid,
-      "body":body,
-      "uuid":uuid,
+      functionId,
+      body: JSON.stringify(body),
       "client":"apple",
-      "clientVersion":"10.1.0"
+      "clientVersion":"10.3.0"
     }
+    let HostArr = ['jdsign.cf', 'signer.nz.lu']
+    let Host = HostArr[Math.floor((Math.random() * HostArr.length))]
     let options = {
       url: `https://cdn.nz.lu/ddo`,
       body: JSON.stringify(data),
       headers: {
-        "Host": "jdsign.cf",
+        Host,
         "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/87.0.4280.88"
       },
       timeout: 30 * 1000
@@ -518,10 +517,10 @@ function shareCodesFormat() {
       let authorCode = deepCopy($.authorCode)
       $.newShareCodes = [...(authorCode.map((item, index) => authorCode[index] = item['inviteCode'])), ...$.newShareCodes];
     }
-    const readShareCodeRes = await readShareCode();
-    if (readShareCodeRes && readShareCodeRes.code === 200) {
-      $.newShareCodes = [...new Set([...$.newShareCodes, ...(readShareCodeRes.data || [])])];
-    }
+    // const readShareCodeRes = await readShareCode();
+    // if (readShareCodeRes && readShareCodeRes.code === 200) {
+    //   $.newShareCodes = [...new Set([...$.newShareCodes, ...(readShareCodeRes.data || [])])];
+    // }
     $.newShareCodes.map((item, index) => $.newShareCodes[index] = { "inviteCode": item, "shareDate": $.shareDate })
     console.log(`第${$.index}个京东账号将要助力的好友${JSON.stringify($.newShareCodes)}`)
     resolve();
@@ -553,7 +552,7 @@ function requireConfig() {
       if ($.getdata('jd_cash_invite')) $.shareCodesArr = $.getdata('jd_cash_invite').split('\n').filter(item => !!item);
       console.log(`\nBoxJs设置的京东签到领现金邀请码:${$.getdata('jd_cash_invite')}\n`);
     }
-    console.log(`加上内部助力，您一共提供了${$.shareCodesArr.length}个账号的${$.name}助力码\n`);
+    console.log(`您提供了${$.shareCodesArr.length}个账号的${$.name}助力码\n`);
     resolve()
   })
 }
@@ -575,10 +574,10 @@ function deepCopy(obj) {
   return objClone;
 }
 
-function apptaskUrl(url, body) {
+function apptaskUrl(functionId = "", body = "") {
   return {
-    url,
-    body: `body=${body}`,
+    url: `${JD_API_HOST}?functionId=${functionId}`,
+    body,
     headers: {
       'Cookie': cookie,
       'Host': 'api.m.jd.com',
@@ -593,7 +592,7 @@ function apptaskUrl(url, body) {
 }
 function taskUrl(functionId, body = {}) {
   return {
-    url: `${JD_API_HOST}?functionId=${functionId}&body=${escape(JSON.stringify(body))}&appid=CashRewardMiniH5Env&appid=9.1.0`,
+    url: `${JD_API_HOST}?functionId=${functionId}&body=${encodeURIComponent(JSON.stringify(body))}&appid=CashRewardMiniH5Env&appid=9.1.0`,
     headers: {
       'Cookie': cookie,
       'Host': 'api.m.jd.com',
