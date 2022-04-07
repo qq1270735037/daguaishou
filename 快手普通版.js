@@ -1,0 +1,1 @@
+ql raw https://raw.githubusercontent.com/bean661/utils/main/ks.js
