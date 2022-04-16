@@ -10,17 +10,17 @@
 
 =====================================Quantumult X=================================
 [task_local]
-40 4,17 * * * https://raw.githubusercontent.com/KingRan/JDJB/main/jd_plantBean_help.js, tag=种豆得豆, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jdzd.png, enabled=true
+40 4,17 * * * jd_plantBean_help.js, tag=种豆得豆, enabled=true
 
 =====================================Loon================================
 [Script]
-cron "40 4,17 * * *" script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_plantBean_help.js,tag=京东种豆得豆
+cron "40 4,17 * * *" jd_plantBean_help.js,tag=京东种豆得豆
 
 ======================================Surge==========================
-京东种豆得豆 = type=cron,cronexp="40 4,17 * * *",wake-system=1,timeout=3600,script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_plantBean_help.js
+京东种豆得豆 = type=cron,cronexp="40 4,17 * * *",wake-system=1,timeout=3600,jd_plantBean_help.js
 
 ====================================小火箭=============================
-京东种豆得豆 = type=cron,script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_plantBean_help.js, cronexpr="40 4,17 * * *", timeout=3600, enable=true
+京东种豆得豆 = type=cron,jd_plantBean_help.js, cronexpr="40 4,17 * * *", timeout=3600, enable=true
 
 */
 const $ = new Env('种豆得豆内部互助');
@@ -42,7 +42,9 @@ let awardState = '';//上期活动的京豆是否收取
 let randomCount = $.isNode() ? 20 : 5;
 let num;
 $.newShareCode = [];
-
+let llerror=false;
+let lnrun = 0;
+let lnruns = 0;
 !(async () => {  
   await requireConfig();
   if (!cookiesArr[0]) {
@@ -71,9 +73,15 @@ $.newShareCode = [];
       subTitle = '';
       option = {};
       await jdPlantBean();
-	  await $.wait(5 * 1000);
+	  await $.wait(2 * 1000);
+	  lnrun++;
 	  await doHelp();
-	  await $.wait(5 * 1000);
+	  if (lnrun == 3) {
+		  console.log(`\n【访问接口次数达到3次，休息一分钟.....】\n`);
+		  await $.wait(60 * 1000);
+		  lnrun = 0;
+	  }
+	  await $.wait(3 * 1000);
     }
   }
   if ($.isNode() && allMessage) {
@@ -87,11 +95,10 @@ $.newShareCode = [];
 
 async function jdPlantBean() {
   try {
-    await plantBeanIndex();
-    if ($.plantBeanIndexResult.errorCode === 'PB101') {
-      console.log(`\n活动太火爆了，还是去买买买吧！\n`)
-      return
-    }
+    console.log(`获取任务及基本信息`)
+    await plantBeanIndex(); 
+    if(llerror)
+		return;
     for (let i = 0; i < $.plantBeanIndexResult.data.roundList.length; i++) {
       if ($.plantBeanIndexResult.data.roundList[i].roundState === "2") {
         num = i
@@ -134,7 +141,13 @@ async function doHelp() {
       console.log(`\n跳过自己的plantUuid\n`)
       continue
     }
+	lnruns++;
     await helpShare(plantUuid);
+	  if (lnruns == 5) {
+		  console.log(`\n【访问接口次数达到5次，休息半分钟.....】\n`);
+		  await $.wait(30 * 1000);
+		  lnruns = 0;
+	  }
     if ($.helpResult && $.helpResult.code === '0') {
       console.log(`助力好友结果: ${JSON.stringify($.helpResult.data.helpShareRes)}`);
       if ($.helpResult.data.helpShareRes) {
@@ -267,7 +280,39 @@ async function helpShare(plantUuid) {
   //console.log(`助力结果的code:${$.helpResult && $.helpResult.code}`);
 }
 async function plantBeanIndex() {
-  $.plantBeanIndexResult = await request('plantBeanIndex');//plantBeanIndexBody
+	llerror=false;
+    $.plantBeanIndexResult = await request('plantBeanIndex'); //plantBeanIndexBody
+    if ($.plantBeanIndexResult.errorCode === 'PB101') {
+        console.log(`\n活动太火爆了，还是去买买买吧！\n`)
+		llerror=true;
+        return
+    }
+    if ($.plantBeanIndexResult.errorCode) {
+        console.log(`获取任务及基本信息出错，10秒后重试\n`)
+        await $.wait(10000);
+        $.plantBeanIndexResult = await request('plantBeanIndex'); 
+        if ($.plantBeanIndexResult.errorCode === 'PB101') {
+            console.log(`\n活动太火爆了，还是去买买买吧！\n`)
+			llerror=true;
+            return
+        }
+    }
+    if ($.plantBeanIndexResult.errorCode) {
+        console.log(`获取任务及基本信息出错，30秒后重试\n`)
+        await $.wait(30000);
+        $.plantBeanIndexResult = await request('plantBeanIndex'); 
+        if ($.plantBeanIndexResult.errorCode === 'PB101') {
+            console.log(`\n活动太火爆了，还是去买买买吧！\n`)
+			llerror=true;
+            return
+        }
+    }
+    if ($.plantBeanIndexResult.errorCode) {
+        console.log(`获取任务及基本信息失败，活动异常，换个时间再试试吧....`)
+        console.log("错误代码;" + $.plantBeanIndexResult.errorCode)
+		llerror=true;
+        return
+    }
 }
 function requestGet(function_id, body = {}) {
   if (!body.version) {
