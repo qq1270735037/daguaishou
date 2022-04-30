@@ -3,33 +3,30 @@
 可互助，助力码每日不变，只变日期
 活动入口：京东APP搜索领现金进入
 更新时间：2021-06-07
-PandaToken 请前往 https://t.me/pang_da_bot  获取Token
 已支持IOS双京东账号,Node.js支持N个京东账号
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 ============Quantumultx===============
 [task_local]
 #签到领现金
-11 1,20 * * * jd_cash.js, tag=签到领现金, enabled=true
+2 0-23/4 * * * jd_cash.js, tag=签到领现金, img-url=https://raw.githubusercontent.com/Orz-3/mini/master/Color/jd.png, enabled=true
 
 ================Loon==============
 [Script]
-cron "11 1,20 * * *" script-path=jd_cash.js,tag=签到领现金
+cron "2 0-23/4 * * *" script-path=jd_cash.js,tag=签到领现金
 
 ===============Surge=================
-签到领现金 = type=cron,cronexp="11 1,20 * * *",wake-system=1,timeout=3600,script-path=jd_cash.js
+签到领现金 = type=cron,cronexp="2 0-23/4 * * *",wake-system=1,timeout=3600,script-path=jd_cash.js
 
 ============小火箭=========
-签到领现金 = type=cron,script-path=jd_cash.js, cronexpr="11 1,20 * * *", timeout=3600, enable=true
+签到领现金 = type=cron,script-path=jd_cash.js, cronexpr="2 0-23/4 * * *", timeout=3600, enable=true
  */
-const $ = new Env('签到领现金_Panda');
+const $ = new Env('签到领现金潘达接口版');
 const notify = $.isNode() ? require('./sendNotify') : '';
 //Node.js用户请在jdCookie.js处填写京东ck;
 const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
 let jdNotify = true;//是否关闭通知，false打开通知推送，true关闭通知推送
 //IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [], cookie = '', message;
-let helpAuthor = true;
-const randomCount = $.isNode() ? 5 : 5;
 let cash_exchange = false;//是否消耗2元红包兑换200京豆，默认否
 const inviteCodes = []
 if ($.isNode()) {
@@ -42,20 +39,11 @@ if ($.isNode()) {
 }
 const JD_API_HOST = 'https://api.m.jd.com/client.action';
 let allMessage = '';
-let jdPandaToken = '';
-jdPandaToken = $.isNode() ? (process.env.PandaToken ? process.env.PandaToken : `${jdPandaToken}`) : ($.getdata('PandaToken') ? $.getdata('PandaToken') : `${jdPandaToken}`);
-if (!jdPandaToken) {
-    console.log('请填写Panda获取的Token,变量是PandaToken');
-	return;
-}
-
 !(async () => {
   if (!cookiesArr[0]) {
     $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/bean/signIndex.action', {"open-url": "https://bean.m.jd.com/bean/signIndex.action"});
     return;
   }
- // await requireConfig()
-  
   for (let i = 0; i < cookiesArr.length; i++) {
     if (cookiesArr[i]) {
       cookie = cookiesArr[i];
@@ -123,7 +111,7 @@ async function appindex(info=false) {
               }
               $.signMoney = data.data.result.totalMoney;
               // console.log(`您的助力码为${data.data.result.invitedCode}`)
-              console.log(`\n【京东账号${$.index}（${$.UserName}）的好友互助码】${data.data.result.invitedCode}\n`);
+              console.log(`\n【京东账号${$.index}（${$.UserName}）的${$.name}好友互助码】${data.data.result.invitedCode}\n`);
               let helpInfo = {
                 'inviteCode': data.data.result.invitedCode,
                 'shareDate': data.data.result.shareDate
@@ -222,8 +210,7 @@ function index() {
 async function appdoTask(type,taskInfo) {
   let functionId = 'cash_doTask'
   let body = {"type":type,"taskInfo":taskInfo}
-  await $.wait(5000)
-  let sign = await getSignfromPanda(functionId, body)  
+  let sign = await getSignfromPanda(functionId, body)
 
   return new Promise((resolve) => {
     $.post(apptaskUrl(functionId, sign), (err, resp, data) => {
@@ -276,114 +263,36 @@ function doTask(type,taskInfo) {
     })
   })
 }
-function getSignfromPanda(functionId, body) {	
-    var strsign = '';
-	let data = {
-      "fn":functionId,
-      "body": body
-    }
-    return new Promise((resolve) => {
-        let url = {
-            url: "https://api.zhezhe.cf/jd/sign",
-            body: JSON.stringify(data),
-		    followRedirect: false,
-		    headers: {
-		        'Accept': '*/*',
-		        "accept-encoding": "gzip, deflate, br",
-		        'Content-Type': 'application/json',
-				'Authorization': 'Bearer ' + jdPandaToken
-		    },
-		    timeout: 30000
-        }
-        $.post(url, async(err, resp, data) => {
-            try {				
-                data = JSON.parse(data);				
-				
-				if (data && data.code == 200) {
-                    lnrequesttimes = data.request_times;
-                    console.log("连接Panda服务成功，当前Token使用次数为" + lnrequesttimes);
-                    if (data.data.sign)
-                        strsign = data.data.sign || '';
-                    if (strsign != '')
-                        resolve(strsign);
-                    else
-                        console.log("签名获取失败,可能Token使用次数上限或被封.");
-                } else {
-                    console.log("签名获取失败.");
-                }
-				
-            }catch (e) {
-                $.logErr(e, resp);
-            }finally {
-				resolve(strsign);
-			}
-        })
-    })
-}
-
-
-function randomString(e) {
-  e = e || 32;
-  let t = "abcdefghijklmnopqrstuvwxyz0123456789", a = t.length, n = "";
-  for (let i = 0; i < e; i++)
-    n += t.charAt(Math.floor(Math.random() * a));
-  return n
-}
-function showMsg() {
-  return new Promise(resolve => {
-    if (!jdNotify) {
-      $.msg($.name, '', `${message}`);
-    } else {
-      $.log(`京东账号${$.index}${$.nickName}\n${message}`);
-    }
-    resolve()
-  })
-}
-function requireConfig() {
-  return new Promise(resolve => {
-    console.log(`开始获取${$.name}配置文件\n`);
-    let shareCodes = [];
-    if ($.isNode()) {
-      if (process.env.JD_CASH_SHARECODES) {
-        if (process.env.JD_CASH_SHARECODES.indexOf('\n') > -1) {
-          shareCodes = process.env.JD_CASH_SHARECODES.split('\n');
-        } else {
-          shareCodes = process.env.JD_CASH_SHARECODES.split('&');
-        }
-      }
-    }
-    console.log(`共${cookiesArr.length}个京东账号\n`);
-    $.shareCodesArr = [];
-    if ($.isNode()) {
-      Object.keys(shareCodes).forEach((item) => {
-        if (shareCodes[item]) {
-          $.shareCodesArr.push(shareCodes[item])
-        }
-      })
-    } else {
-      if ($.getdata('jd_cash_invite')) $.shareCodesArr = $.getdata('jd_cash_invite').split('\n').filter(item => !!item);
-      console.log(`\nBoxJs设置的京东签到领现金邀请码:${$.getdata('jd_cash_invite')}\n`);
-    }
-    console.log(`您提供了${$.shareCodesArr.length}个账号的${$.name}助力码\n`);
-    resolve()
-  })
-}
-function deepCopy(obj) {
-  let objClone = Array.isArray(obj) ? [] : {};
-  if (obj && typeof obj === "object") {
-    for (let key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        //判断ojb子元素是否为对象，如果是，递归复制
-        if (obj[key] && typeof obj[key] === "object") {
-          objClone[key] = deepCopy(obj[key]);
-        } else {
-          //如果不是，简单复制
-          objClone[key] = obj[key];
-        }
-      }
-    }
+function getSignfromPanda(functionId, body) {
+  var strsign = '';
+  let data = {
+    "fn":functionId,
+    "body": body
   }
-  return objClone;
+  return new Promise((resolve) => {
+    let url = {
+      url: "https://api.jds.codes/jd/sign",
+      body: JSON.stringify(data),
+      followRedirect: false,
+      headers: {
+        'Accept': '*/*',
+        "accept-encoding": "gzip, deflate, br",
+        'Content-Type': 'application/json',
+      },
+      timeout: 30000
+    }
+    $.post(url, async(err, resp, data) => {
+      try {
+        data = JSON.parse(data);
+        strsign=data.data.sign;
+
+      }catch (e) {
+        $.logErr(e, resp);
+      }finally {
+        resolve(strsign);
+      }
+    })
+  })
 }
 
 function apptaskUrl(functionId = "", body = "") {
