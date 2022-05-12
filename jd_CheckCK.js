@@ -1,7 +1,6 @@
 /*
-cron "30 * * * *" jd_CheckCK.js, tag:京东CK检测by-ccwav
+cron "30 2-22/2 * * *" jd_CheckCK.js, tag:京东CK检测by-ccwav
  */
-//详细说明参考 https://github.com/ccwav/QLScript2.
 const $ = new Env('京东CK检测');
 const notify = $.isNode() ? require('./sendNotify') : '';
 //Node.js用户请在jdCookie.js处填写京东ck;
@@ -22,7 +21,7 @@ const api = got.extend({
     });
 
 let ShowSuccess = "false",
-CKAlwaysNotify = "true",
+CKAlwaysNotify = "false",
 CKAutoEnable = "true",
 NoWarnError = "false";
 
