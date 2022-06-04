@@ -639,7 +639,7 @@ async function doApi(functionId, prepend = {}, append = {}, needSs = false, getL
                         data = JSON.parse(data)
                         if (getLast) {
                             res = data?.data
-                            if (data?.data?.bizCode === -1002) {
+                            if (data?.data?.bizCode === -1001) {
                                 console.log(formatErr(functionId, data, toCurl(option)))
                             }
                         } else {
